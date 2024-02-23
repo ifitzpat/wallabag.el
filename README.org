@@ -62,7 +62,7 @@ Installing with [[https://framagit.org/steckerhalter/quelpa][Quelpa]] is easy:
 
 #+BEGIN_SRC elisp
 (use-package wallabag
-  :quelpa (wallabag :fetcher github :repo "ifitzpat/wallabag.el.git")
+  :quelpa (wallabag :fetcher github :repo "ifitzpat/wallabag.el")
   :config
   (setq wallabag-client-id "client-id-of-your-registered-app")
   (setq wallabag-client-secret "client-secret-of-your-registered-app")
