@@ -150,7 +150,6 @@
   (when (elfeed-entry-p entry)
     ;(elfeed-tag-1 entry 'later)
     (elfeed-search-toggle-all 'later)
-    (unless elfeed-search-remain-on-entry (forward-line))
     (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
     (wallabag-post-link (elfeed-entry-link entry))))
 
