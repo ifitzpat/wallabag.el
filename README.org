@@ -4,7 +4,7 @@
 [[https://wallabag.org/][Wallabag]] is a self-hostable bookmark manager that provides RSS feeds of your
 bookmarks. With Wallabag.el you can quickly send urls to wallabag.
 
-*Disclaimer:* wallabag is currently in alpha
+*Disclaimer:* wallabag.el is currently in alpha
 
 * Contents
 :PROPERTIES:
