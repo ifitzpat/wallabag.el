@@ -98,6 +98,8 @@ Better sync between elfeed & wallabag
 @node Screenshots
 @chapter Screenshots
 
+Coming soon
+
 @image{images/wallabag-demo,,,,gif}
 
 @node Installation
@@ -111,6 +113,8 @@ Better sync between elfeed & wallabag
 
 @node Prerequisites
 @section Prerequisites
+
+Create a client in your wallabag account and note down the @samp{client_id} and @samp{client_secret}.
 
 @uref{https://doc.wallabag.org/img/user/browser_api_management.en.png}
 

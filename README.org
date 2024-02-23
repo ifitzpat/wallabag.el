@@ -31,6 +31,8 @@ bookmarks. With Wallabag.el you can quickly send urls to wallabag.
   
 * Screenshots
 
+Coming soon
+
 [[file:images/wallabag-demo.gif]]
 
 * Installation
@@ -39,6 +41,8 @@ bookmarks. With Wallabag.el you can quickly send urls to wallabag.
 :END:
 
 ** Prerequisites
+
+Create a client in your wallabag account and note down the =client_id= and =client_secret=.
 
 [[https://doc.wallabag.org/img/user/browser_api_management.en.png]]
 
