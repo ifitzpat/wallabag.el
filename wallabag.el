@@ -106,7 +106,7 @@
 
 (defun wallabag-tag-entry (num tags)
   (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token)))))
-    (request (concat wallabag-api-url "/entries/" num "/tags")
+    (request (concat wallabag-url "/api/entries/" num "/tags")
       :type "POST"
       :sync t
       :data `(("tags" . ,tags))
@@ -172,6 +172,24 @@
     (apply #'elfeed-tag entry (list 'later))
     (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
     (wallabag-post-link (elfeed-entry-link entry) tagcsv))))
+
+(defun elfeed-wallabag-update-entry-tags (entry tags)
+    (let* ((feed (elfeed-entry-feed entry))
+	   (link (elfeed-entry-link entry))
+	   (entrynum (when (string-match ".*/\\([0-9]+\\)" link) (match-string 1 link)))
+	   (tagstr (mapcar #'symbol-name tags))
+	   (tagstr (remove "unread" tagstr))
+	   (tagcsv (string-join tagstr ","))
+	   )
+      (wallabag-tag-entry entrynum tagcsv)))
+
+(defun elfeed-wallabag-update-tags (orig-fun &rest args)
+  (mapcar (lambda (entry)
+     (when (string-prefix-p "wallabag" (elfeed-feed-title (elfeed-entry-feed entry)) t)
+	   (elfeed-wallabag-update-entry-tags entry (cdr args)))
+	    ) (car args))
+  (apply orig-fun args))
+
 
 (provide 'wallabag)
 
