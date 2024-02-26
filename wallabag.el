@@ -159,7 +159,7 @@
 		(message "Error untagging entry in Wallabag: %S" error-thrown))))))
 
 (defun wallabag-remove-tags (entrynum tags) ;here tags is a list
-  (mapcar (lambda (tag) (wallabag-remove-tag entrynum (cds (assoc tag wallabag-tags)))) tags))
+  (mapcar (lambda (tag) (wallabag-remove-tag entrynum (cdr (assoc tag wallabag-tags)))) tags))
 
 
 (defun elfeed-show-wallabag-delete ()
