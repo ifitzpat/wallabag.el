@@ -4,7 +4,7 @@
 
 ;; Author: Ian FitzPatrick ian@ianfitzpatrick.eu
 ;; URL: github.com/ifitzpat/wallabag.el
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ((emacs "27.1")(request))
 ;; Keywords: elfeed bookmarks
 

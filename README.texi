@@ -54,6 +54,7 @@ Usage
 
 Changelog
 
+* 0.0.2-alpha: 002-alpha. 
 * 0.0.1-alpha: 001-alpha. 
 
 Notes
@@ -214,8 +215,19 @@ wallabag RSS feed):}
 @emph{Note:} Breaking changes may be made before version 1.0, but in the event of major changes, attempts at backward compatibility will be made with obsolescence declarations, translation of arguments, etc.  Users who need stability guarantees before 1.0 may choose to use tagged stable releases.
 
 @menu
+* 0.0.2-alpha: 002-alpha. 
 * 0.0.1-alpha: 001-alpha. 
 @end menu
+
+@node 002-alpha
+@section 0.0.2-alpha
+
+@itemize
+@item
+Inherit elfeed tags when sending a link to wallabag from elfeed
+@item
+Add/Remove tags in wallabag when you do so in elfeed
+@end itemize
 
 @node 001-alpha
 @section 0.0.1-alpha
