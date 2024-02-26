@@ -241,7 +241,7 @@
 (defun elfeed-wallabag-remove-entries-tags (orig-fun &rest args)
   (if (listp (car args))
       (mapcar (lambda (entry) (elfeed-wallabag-remove-entry-tags entry (cdr args))) (car args))
-      (elfeed-wallabag-remove-entry-tags entries (cdr args)))
+      (elfeed-wallabag-remove-entry-tags (car args) (cdr args)))
   (apply orig-fun args))
 
 
