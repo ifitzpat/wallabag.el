@@ -72,6 +72,28 @@
 	      (lambda (&rest args &key error-thrown &allow-other-keys)
 		(message "Error adding url to Wallabag: %S" error-thrown))))))
 
+
+(defun wallabag-get-tags-list ()
+  (interactive)
+  (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token)))))
+      (request (concat wallabag-url "/api/tags")
+      :type "GET"
+      :sync t
+      :headers `(("Authorization" . ,(concat "Bearer " access-token)))
+      :parser 'json-read
+      :success (cl-function
+		(lambda (&key data &allow-other-keys)
+		  (when data
+		    (let* ((taglist (append data nil)))
+                    (setq wallabag-tags (mapcar (lambda (x) `(,(cdr (assoc 'label x))  . ,(cdr (assoc 'id x)))) taglist))
+		      )
+		    )))
+      :error (cl-function
+	      (lambda (&rest args &key error-thrown &allow-other-keys)
+		(message "Error retrieving tags: %S" error-thrown))))))
+
+
+
 (defun wallabag-delete-entry (num)
   (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token)))))
     (request (concat wallabag-url "/api/entries/" num)
@@ -119,6 +141,26 @@
       :error (cl-function
 	      (lambda (&rest args &key error-thrown &allow-other-keys)
 		(message "Error tagging entry in Wallabag: %S" error-thrown))))))
+
+
+(defun wallabag-remove-tag (entrynum tag) ;tag has to be an int
+  (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token)))))
+    (request (concat wallabag-url "/api/entries/" entrynum "/tags/" tag)
+      :type "DELETE"
+      :sync t
+      :headers `(("Authorization" . ,(concat "Bearer " access-token)))
+      :success (cl-function
+		(lambda (&key data &allow-other-keys)
+		  (when data
+		    (message "Untagging entry in wallabag")
+		    )))
+      :error (cl-function
+	      (lambda (&rest args &key error-thrown &allow-other-keys)
+		(message "Error untagging entry in Wallabag: %S" error-thrown))))))
+
+(defun wallabag-remove-tags (entrynum tags) ;here tags is a list
+  (mapcar (lambda (tag) (wallabag-remove-tag entrynum (cds (assoc tag wallabag-tags)))) tags))
+
 
 (defun elfeed-show-wallabag-delete ()
   (interactive)
@@ -169,27 +211,48 @@
 	   (tagstr (mapcar #'symbol-name tags))
 	   (tagstr (remove "unread" tagstr))
 	   (tagcsv (string-join tagstr ",")))
-    (apply #'elfeed-tag entry (list 'later))
-    (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
-    (wallabag-post-link (elfeed-entry-link entry) tagcsv))))
+      (apply #'elfeed-tag entry (list 'later))
+      (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
+      (wallabag-post-link (elfeed-entry-link entry) tagcsv))))
 
 (defun elfeed-wallabag-update-entry-tags (entry tags)
-    (let* ((feed (elfeed-entry-feed entry))
-	   (link (elfeed-entry-link entry))
-	   (entrynum (when (string-match ".*/\\([0-9]+\\)" link) (match-string 1 link)))
-	   (tagstr (mapcar #'symbol-name tags))
-	   (tagstr (remove "unread" tagstr))
-	   (tagcsv (string-join tagstr ","))
-	   )
-      (wallabag-tag-entry entrynum tagcsv)))
+  (let* ((feed (elfeed-entry-feed entry))
+	 (link (elfeed-entry-link entry))
+	 (entrynum (when (string-match ".*/\\([0-9]+\\)" link) (match-string 1 link)))
+	 (tagstr (mapcar #'symbol-name tags))
+	 (tagstr (remove "unread" tagstr))
+	 (tagcsv (string-join tagstr ","))
+	 )
+    (wallabag-tag-entry entrynum tagcsv)))
+
+(defun elfeed-wallabag-remove-entry-tags (entry tags)
+  (let* ((feed (elfeed-entry-feed entry))
+	 (link (elfeed-entry-link entry))
+	 (entrynum (when (string-match ".*/\\([0-9]+\\)" link) (match-string 1 link)))
+	 (tagstr (mapcar #'symbol-name tags))
+	 (tagstr (remove "unread" tagstr))
+	 )
+    (when (string-prefix-p "wallabag" (elfeed-feed-title (elfeed-entry-feed entry)) t)
+    (progn
+        (wallabag-get-tags-list)
+        (wallabag-remove-tags entrynum tagstr)))
+    ))
+
+(defun elfeed-wallabag-remove-entries-tags (orig-fun &rest args)
+  (if (listp (car args))
+      (mapcar (lambda (entry) (elfeed-wallabag-remove-entry-tags entry (cdr args))) (car args))
+      (elfeed-wallabag-remove-entry-tags entries (cdr args)))
+  (apply orig-fun args))
+
 
 (defun elfeed-wallabag-update-tags (orig-fun &rest args)
   (mapcar (lambda (entry)
-     (when (string-prefix-p "wallabag" (elfeed-feed-title (elfeed-entry-feed entry)) t)
-	   (elfeed-wallabag-update-entry-tags entry (cdr args)))
-	    ) (car args))
+	    (when (string-prefix-p "wallabag" (elfeed-feed-title (elfeed-entry-feed entry)) t)
+	      (elfeed-wallabag-update-entry-tags entry (cdr args)))) (car args))
   (apply orig-fun args))
 
+(advice-add 'elfeed-tag :around #'elfeed-wallabag-update-tags)
+(advice-add 'elfeed-untag :around #'elfeed-wallabag-remove-entries-tags)
 
 (provide 'wallabag)
 
