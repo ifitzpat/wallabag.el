@@ -211,7 +211,7 @@
 	   (tagstr (mapcar #'symbol-name tags))
 	   (tagstr (remove "unread" tagstr))
 	   (tagcsv (string-join tagstr ",")))
-      (apply #'elfeed-tag entry (list 'later))
+      (elfeed-search-tag-all 'later)
       (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
       (wallabag-post-link (elfeed-entry-link entry) tagcsv))))
 
