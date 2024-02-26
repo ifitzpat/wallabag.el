@@ -53,14 +53,15 @@
 		(message "Error getting access token: %S" error-thrown)))
       )))
 
-(defun wallabag-post-link (&optional link)
+(defun wallabag-post-link (&optional link tags) ; assume that tags is a comma-separated list of tags
   (interactive)
   (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token))))
 	(url (or link (thing-at-point 'url t))))
     (request (concat wallabag-url "/api/entries.json")
       :type "POST"
       :sync t
-      :data `(("url" . ,url))
+      :data `(,(when tags `("tags" . ,tags))
+	      ("url" . ,url))
       :headers `(("Authorization" . ,(concat "Bearer " access-token)))
       :success (cl-function
 		(lambda (&key data &allow-other-keys)
@@ -102,6 +103,22 @@
       :error (cl-function
 	      (lambda (&rest args &key error-thrown &allow-other-keys)
 		(message "Error archiving entry in Wallabag: %S" error-thrown))))))
+
+(defun wallabag-tag-entry (num tags)
+  (let ((access-token (assoc-default 'access_token (request-response-data (wallabag-request-access-token)))))
+    (request (concat wallabag-api-url "/entries/" num "/tags")
+      :type "POST"
+      :sync t
+      :data `(("tags" . ,tags))
+      :headers `(("Authorization" . ,(concat "Bearer " access-token)))
+      :success (cl-function
+		(lambda (&key data &allow-other-keys)
+		  (when data
+		    (message "Tagging entry in wallabag")
+		    )))
+      :error (cl-function
+	      (lambda (&rest args &key error-thrown &allow-other-keys)
+		(message "Error tagging entry in Wallabag: %S" error-thrown))))))
 
 (defun elfeed-show-wallabag-delete ()
   (interactive)
@@ -148,10 +165,13 @@
   "Display the currently selected item in a buffer."
   (interactive (list (elfeed-search-selected :ignore-region)))
   (when (elfeed-entry-p entry)
-    ;(elfeed-tag-1 entry 'later)
-    (elfeed-search-toggle-all 'later)
+    (let* ((tags (elfeed-entry-tags entry))
+	   (tagstr (mapcar #'symbol-name tags))
+	   (tagstr (remove "unread" tagstr))
+	   (tagcsv (string-join tagstr ",")))
+    (apply #'elfeed-tag entry (list 'later))
     (message "Adding: %s to Wallabag" (elfeed-entry-link entry))
-    (wallabag-post-link (elfeed-entry-link entry))))
+    (wallabag-post-link (elfeed-entry-link entry) tagcsv))))
 
 (provide 'wallabag)
 
